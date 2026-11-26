@@ -25,7 +25,7 @@ export const ShippingPolicyPage = () => {
             1. Complimentary White-Glove Shipping Threshold
           </h2>
           <p>
-            AURA provides complimentary insured standard delivery across all pin-codes in India for orders valued at ₹2,500 or higher. For orders below this threshold, a standard courier convenience fee of ₹199 applies.
+            BELLMORA LUXURY provides complimentary insured standard delivery across all pin-codes in India for orders valued at ₹2,500 or higher. For orders below this threshold, a standard courier convenience fee of ₹199 applies.
           </p>
         </div>
 

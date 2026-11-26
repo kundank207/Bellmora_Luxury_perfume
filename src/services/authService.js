@@ -109,7 +109,7 @@ export const authService = {
     const googleDemoUser = {
       id: 'user_google_demo_01',
       fullName: 'Julian Sterling',
-      email: 'julian.sterling@aurafragrance.demo',
+      email: 'julian.sterling@bellmoraluxury.demo',
       phone: '+91 98111 22334',
       role: 'Google Verified Member',
       isDemo: true,

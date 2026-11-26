@@ -33,7 +33,7 @@ export const trackingService = {
     }
 
     if (!found) {
-      throw new Error(`No demonstration order found matching "${query}". You can try seeded sample IDs: AUR-89241, AUR-92318, or AUR-95104.`);
+      throw new Error(`No demonstration order found matching "${query}". You can try seeded sample IDs: BLM-89241, BLM-92318, or BLM-95104.`);
     }
 
     return found;

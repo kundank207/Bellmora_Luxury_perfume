@@ -20,7 +20,7 @@ export const ContactPage = () => {
           Client Concierge
         </span>
         <h1 className="font-serif text-3xl sm:text-5xl text-aura-espresso font-medium">
-          Contact the AURA Atelier
+          Contact the BELLMORA LUXURY Atelier
         </h1>
         <p className="text-xs text-aura-grey leading-relaxed">
           Whether you seek private consultation regarding a bespoke fragrance profile, order guidance, or gifting advice, our sommeliers are at your disposal.
@@ -39,7 +39,7 @@ export const ContactPage = () => {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-4 h-4 text-aura-gold mt-0.5 flex-shrink-0" />
                 <div>
-                  <strong className="text-aura-espresso block font-medium">AURA Fragrance Atelier (Sample)</strong>
+                  <strong className="text-aura-espresso block font-medium">BELLMORA LUXURY Fragrance Atelier (Sample)</strong>
                   <span>Altamount Road, Cumballa Hill</span>
                   <span className="block">Mumbai, Maharashtra 400026, India</span>
                 </div>
@@ -49,7 +49,7 @@ export const ContactPage = () => {
                 <Mail className="w-4 h-4 text-aura-gold mt-0.5 flex-shrink-0" />
                 <div>
                   <strong className="text-aura-espresso block font-medium">Concierge Email</strong>
-                  <span className="font-mono text-aura-espresso">concierge@aurafragrance.demo</span>
+                  <span className="font-mono text-aura-espresso">concierge@bellmoraluxury.demo</span>
                 </div>
               </div>
 
@@ -65,7 +65,7 @@ export const ContactPage = () => {
             <div className="pt-4 border-t border-aura-beige">
               <button
                 type="button"
-                onClick={() => alert('Demo WhatsApp Concierge: In production, this launches direct WhatsApp chat with an AURA scent sommelier.')}
+                onClick={() => alert('Demo WhatsApp Concierge: In production, this launches direct WhatsApp chat with a BELLMORA LUXURY scent sommelier.')}
                 className="w-full py-2.5 px-3 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl font-semibold flex items-center justify-center space-x-2 hover:bg-emerald-100 transition-colors"
               >
                 <MessageCircle className="w-4 h-4 text-emerald-600" />

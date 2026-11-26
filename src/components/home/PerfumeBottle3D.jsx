@@ -107,8 +107,8 @@ export const StaticHeroFallback = () => (
     <div className="relative max-w-sm mx-auto">
       <div className="absolute inset-0 bg-aura-gold/20 blur-3xl rounded-full transform -translate-y-4" />
       <img
-        src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1000&q=80"
-        alt="AURA Haute Parfumerie Flacon"
+        src="/images/products/unisex/bellmora-santal-ethereal.jpg"
+        alt="BELLMORA LUXURY Santal Ethereal flacon"
         className="relative z-10 w-full h-auto max-h-[460px] object-cover rounded-3xl shadow-2xl border-4 border-white/80"
       />
       <div className="absolute -bottom-4 -right-4 z-20 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-xl shadow-lg border border-aura-gold/30 text-xs">

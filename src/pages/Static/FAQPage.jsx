@@ -7,19 +7,19 @@ export const FAQPage = () => {
 
   const faqs = [
     {
-      q: 'What distinguishes AURA fragrances from regular designer perfumes?',
-      a: 'All AURA creations are formulated at a rich 30% Extrait de Parfum concentration, compared to mainstream 10-15% Eau de Toilettes. This provides profound depth, exceptional longevity (10 to 14+ hours), and intimate skin intimacy without synthetic harshness.'
+      q: 'What distinguishes BELLMORA LUXURY fragrances from regular designer perfumes?',
+      a: 'All BELLMORA LUXURY creations are formulated at a rich 30% Extrait de Parfum concentration, compared to mainstream 10-15% Eau de Toilettes. This provides profound depth, exceptional longevity (10 to 14+ hours), and intimate skin intimacy without synthetic harshness.'
     },
     {
-      q: 'What is the difference between AURA Original Parfumerie and Inspired Fragrances?',
-      a: 'AURA Original formulations are our proprietary haute parfumerie recipes developed in-house from rare botanicals and resins. Our Inspired Fragrances are independent, respectful artistic interpretations paying tribute to legendary global scent profiles, crafted with equivalent oil concentration at accessible value.'
+      q: 'What is the difference between BELLMORA Original Parfumerie and Inspired Fragrances?',
+      a: 'BELLMORA Original formulations are our proprietary haute parfumerie recipes developed in-house from rare botanicals and resins. Our Inspired Fragrances are independent, respectful artistic interpretations paying tribute to legendary global scent profiles, crafted with equivalent oil concentration at accessible value.'
     },
     {
       q: 'How does your "Scent Guarantee" sampling work?',
-      a: 'Every 50ml or 100ml full flacon order includes complimentary 2ml discovery vials of your chosen scent. We encourage you to test the vial on your skin first before opening the cellophane on the master presentation casket. If you decide the fragrance does not suit your aura, return the unopened full flacon for an exchange.'
+      a: 'Every 50ml or 100ml full flacon order includes complimentary 2ml discovery vials of your chosen scent. We encourage you to test the vial on your skin first before opening the cellophane on the master presentation casket. If you decide the fragrance does not suit your personal taste, return the unopened full flacon for an exchange.'
     },
     {
-      q: 'Are AURA fragrances certified and skin safe?',
+      q: 'Are BELLMORA LUXURY fragrances certified and skin safe?',
       a: 'Yes. All formulations adhere strictly to the International Fragrance Association (IFRA) safety guidelines. Our products are 100% cruelty-free, vegan, phthalate-free, and formulated without parabens.'
     },
     {

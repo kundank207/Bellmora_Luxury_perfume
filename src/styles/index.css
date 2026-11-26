@@ -37,3 +37,29 @@
     background: radial-gradient(circle at center, rgba(198, 164, 106, 0.08) 0%, rgba(248, 245, 239, 0) 70%);
   }
 }
+
+.bellmora-hero-video,
+.bellmora-hero-poster {
+  object-fit: cover;
+  object-position: 65% center;
+}
+
+@media (max-width: 1023px) {
+  .bellmora-hero-video,
+  .bellmora-hero-poster {
+    object-position: 72% center;
+  }
+}
+
+@media (max-width: 639px) {
+  .bellmora-hero-video,
+  .bellmora-hero-poster {
+    object-position: 78% center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

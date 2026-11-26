@@ -72,7 +72,7 @@ export const MiniCartDrawer = () => {
                   Your bag is currently empty
                 </h3>
                 <p className="text-xs text-aura-grey max-w-xs mb-6">
-                  Explore our curated extrait de parfums and find the signature scent that defines your aura.
+                  Explore our curated extrait de parfums and find the signature scent that reflects your style.
                 </p>
                 <button
                   onClick={() => {

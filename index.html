@@ -16,10 +16,10 @@
     <script>
       window.addEventListener('error', function(e) {
         console.error('Captured window error:', e);
-        var existing = document.getElementById('aura-runtime-error');
+        var existing = document.getElementById('bellmora-runtime-error');
         if (!existing) {
           var div = document.createElement('div');
-          div.id = 'aura-runtime-error';
+          div.id = 'bellmora-runtime-error';
           div.style.cssText = 'position:fixed;top:10px;left:10px;right:10px;background:#fff1f0;border:2px solid #ff4d4f;color:#cf1322;padding:16px;z-index:999999;font-family:sans-serif;border-radius:12px;font-size:12px;box-shadow:0 10px 30px rgba(0,0,0,0.15);';
           div.innerHTML = '<strong style="font-size:14px;">Runtime Error Detected:</strong><br/>' + (e.message || 'Unknown script error') + '<br/><span style="color:#666;font-size:10px;">' + (e.filename || '') + ':' + (e.lineno || '') + '</span>';
           document.body.appendChild(div);

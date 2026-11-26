@@ -89,6 +89,7 @@ export const ProductDetailsPage = () => {
     );
   }
 
+  const galleryImages = product.images.filter((image) => !image.includes('/editorial/'));
   const inWish = isInWishlist(product.id);
   const currentSizeObj = selectedSize || product.sizes[0];
 
@@ -119,7 +120,7 @@ export const ProductDetailsPage = () => {
         <div className="lg:col-span-7 space-y-4">
           <div className="relative aspect-[4/5] bg-aura-cream/40 rounded-3xl overflow-hidden border border-aura-beige shadow-luxury">
             <img
-              src={product.images[activeImageIndex]}
+              src={galleryImages[activeImageIndex]}
               alt={product.name}
               className="w-full h-full object-cover object-center cursor-zoom-in transition-all duration-300"
               onClick={() => setLightboxOpen(true)}
@@ -142,9 +143,9 @@ export const ProductDetailsPage = () => {
           </div>
 
           {/* Thumbnails */}
-          {product.images.length > 1 && (
+          {galleryImages.length > 1 && (
             <div className="flex gap-3">
-              {product.images.map((img, idx) => (
+              {galleryImages.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveImageIndex(idx)}
@@ -433,7 +434,7 @@ export const ProductDetailsPage = () => {
             <X className="w-8 h-8" />
           </button>
           <img
-            src={product.images[activeImageIndex]}
+            src={galleryImages[activeImageIndex]}
             alt={product.name}
             className="max-w-4xl max-h-[85vh] object-contain rounded-2xl shadow-2xl"
           />

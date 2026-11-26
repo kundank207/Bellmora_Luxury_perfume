@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BuildBundleDemo } from '../../components/home/BuildBundleDemo';
 import { ProductCard } from '../../components/product/ProductCard';
@@ -16,11 +16,31 @@ import {
 } from 'lucide-react';
 
 export const HomePage = () => {
+  const videoRef = useRef(null);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
   const [bestsellers, setBestsellers] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
   const [originalCollection, setOriginalCollection] = useState([]);
   const [inspiredCollection, setInspiredCollection] = useState([]);
   const [giftSets, setGiftSets] = useState([]);
+
+  useEffect(() => {
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleMotionPreferenceChange = (event) => {
+      if (event.matches) {
+        videoRef.current?.pause();
+        setVideoReady(false);
+      }
+      setPrefersReducedMotion(event.matches);
+    };
+
+    motionPreference.addEventListener('change', handleMotionPreferenceChange);
+    return () => motionPreference.removeEventListener('change', handleMotionPreferenceChange);
+  }, []);
 
   useEffect(() => {
     productService.getBestsellers().then((res) => setBestsellers(res.slice(0, 4)));
@@ -30,34 +50,51 @@ export const HomePage = () => {
     productService.getGiftSets().then((res) => setGiftSets(res.slice(0, 4)));
   }, []);
 
-  const scrollToFragranceFinder = (e) => {
-    e.preventDefault();
-    const elem = document.getElementById('fragrance-finder');
-    if (elem) {
-      elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      window.location.href = '/fragrance-finder';
-    }
-  };
-
   return (
     <div className="space-y-20 pb-16">
       {/* 1. Full-Width Cinematic Video Hero Section (No 3D Bottle) */}
-      <section className="relative overflow-hidden w-full min-h-[750px] lg:min-h-[85vh] flex items-center border-b border-aura-beige/80">
+      <section className="relative overflow-hidden w-full min-h-[700px] md:min-h-[75vh] lg:min-h-[85vh] flex items-center border-b border-aura-beige/80">
         {/* Cinematic Background Video */}
-        <div className="absolute inset-0 w-full h-full overflow-hidden">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            poster="/videos/bellmora-poster.jpg"
-            className="w-full h-full object-cover"
-            style={{ objectPosition: '65% center' }}
-          >
-            <source src="/videos/bellmora-hero.mp4" type="video/mp4" />
-          </video>
+        <div className="absolute inset-0 w-full h-full overflow-hidden bg-[#E9DDCA]">
+          <img
+            src="/videos/bellmora-poster.jpg"
+            alt=""
+            aria-hidden="true"
+            className="bellmora-hero-poster absolute inset-0 w-full h-full"
+          />
+
+          {!prefersReducedMotion && !videoFailed && (
+            <video
+              ref={videoRef}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              poster="/videos/bellmora-poster.jpg"
+              aria-hidden="true"
+              tabIndex="-1"
+              onCanPlay={(event) => {
+                const playback = event.currentTarget.play();
+                if (playback) {
+                  playback.then(() => setVideoReady(true)).catch(() => {
+                    setVideoReady(false);
+                    setVideoFailed(true);
+                  });
+                }
+              }}
+              onPlaying={() => setVideoReady(true)}
+              onError={() => {
+                setVideoReady(false);
+                setVideoFailed(true);
+              }}
+              className={`bellmora-hero-video absolute inset-0 w-full h-full transition-opacity duration-500 ${
+                videoReady ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <source src="/videos/bellmora-hero.mp4" type="video/mp4" />
+            </video>
+          )}
 
           {/* Left-side subtle ivory/warm gradient overlay for text readability without obscuring right-side perfume bottle */}
           <div
@@ -111,15 +148,14 @@ export const HomePage = () => {
                 <ArrowRight className="w-4 h-4 text-aura-gold group-hover:translate-x-1 transition-transform" />
               </Link>
 
-              <a
-                href="#fragrance-finder"
-                onClick={scrollToFragranceFinder}
+              <Link
+                to="/fragrance-finder"
                 className="w-full sm:w-auto px-8 py-4 border border-aura-espresso/30 hover:border-aura-gold text-aura-espresso bg-white/70 hover:bg-white text-xs font-semibold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center space-x-2 shadow-xs"
               >
                 <Compass className="w-4 h-4 text-aura-gold" />
-                <span>DISCOVER YOUR SCENT</span>
+                <span>FRAGRANCE FINDER</span>
                 <ArrowRight className="w-3.5 h-3.5 text-aura-espresso/60" />
-              </a>
+              </Link>
             </div>
 
             {/* Atelier Accreditations */}
@@ -161,7 +197,7 @@ export const HomePage = () => {
               title: "Men's Haute Parfumerie",
               subtitle: 'Smoked Woods, Fine Leathers & Spices',
               link: '/category/men',
-              image: '/images/products/men/bellmora-noir-intense.jpg',
+              image: '/images/WhatsApp Image 2026-11-25 at 14.48.53 (1).jpeg',
               count: '8 Creations'
             },
             {

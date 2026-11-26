@@ -19,15 +19,15 @@ export const OurStoryPage = () => {
           "A Fragrance That Defines You."
         </p>
         <p className="text-sm text-aura-grey leading-relaxed font-light">
-          AURA was founded on a singular conviction: that true luxury in perfumery is not measured by celebrity endorsements or flamboyant bottles, but by the intimacy, concentration, and emotional truth of the fragrance itself.
+          BELLMORA LUXURY was founded on a singular conviction: that true luxury in perfumery is not measured by celebrity endorsements or flamboyant bottles, but by the intimacy, concentration, and emotional truth of the fragrance itself.
         </p>
       </div>
 
       {/* Large Atelier Image */}
       <div className="rounded-3xl overflow-hidden shadow-luxury border border-aura-beige">
         <img
-          src="https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1400&q=80"
-          alt="AURA Fragrance Laboratory"
+          src="/images/editorial/bellmora-editorial-landscape-1.jpg"
+          alt="BELLMORA LUXURY fragrance collection"
           className="w-full h-[400px] object-cover"
         />
       </div>
@@ -39,7 +39,7 @@ export const OurStoryPage = () => {
             Artisanal Concentration (30% Extrait)
           </h2>
           <p>
-            While mainstream designer fragrances are frequently diluted to Eau de Toilette (8-12%) or modest Eau de Parfum (15%), every AURA creation is formulated at a generous 30% pure perfume oil concentration.
+            While mainstream designer fragrances are frequently diluted to Eau de Toilette (8-12%) or modest Eau de Parfum (15%), every BELLMORA LUXURY creation is formulated at a generous 30% pure perfume oil concentration.
           </p>
           <p>
             This high oil density ensures that our scents do not vanish within two hours. Instead, they gently marry with your skin’s natural heat, unveiling a complex, multi-layered trail that lasts 10 to 14 hours.
@@ -55,7 +55,7 @@ export const OurStoryPage = () => {
           </p>
           <ul className="space-y-2 list-disc pl-5 text-aura-grey">
             <li>
-              <strong className="text-aura-espresso">AURA Original Parfumerie:</strong> Rare, bespoke creations crafted entirely from our in-house olfactory visions, such as <em>Santal Ethereal</em> and <em>Velvet Oud Noir</em>.
+              <strong className="text-aura-espresso">BELLMORA Original Parfumerie:</strong> Rare, bespoke creations crafted entirely from our in-house olfactory visions, such as <em>Santal Ethereal</em> and <em>Velvet Oud Noir</em>.
             </li>
             <li>
               <strong className="text-aura-espresso">Inspired Fragrance Interpretations:</strong> Independent, respectful artistic tributes celebrating the spirit of timeless world classics, crafted with equivalent oil concentration at accessible values.

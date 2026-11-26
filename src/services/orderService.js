@@ -44,7 +44,7 @@ export const orderService = {
 
     // Generate readable demo order reference
     const randomDigits = Math.floor(10000 + Math.random() * 90000);
-    const orderId = `AUR-${randomDigits}`;
+    const orderId = `BLM-${randomDigits}`;
 
     const newOrder = {
       id: orderId,
@@ -58,8 +58,8 @@ export const orderService = {
       paymentStatus: 'Simulated Demo Approved',
       isDemo: true,
       status: 'Order Confirmed',
-      courier: 'AURA Concierge Delivery (Sample)',
-      trackingNumber: `AURA-EXP-${randomDigits}-IN`,
+      courier: 'BELLMORA LUXURY Concierge Delivery (Sample)',
+      trackingNumber: `BLM-EXP-${randomDigits}-IN`,
       estimatedDelivery: 'Estimated within 3-5 business days (Demo)',
       timeline: [
         {

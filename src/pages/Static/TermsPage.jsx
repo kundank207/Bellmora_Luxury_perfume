@@ -18,7 +18,7 @@ export const TermsPage = () => {
       <div className="bg-white p-8 sm:p-12 rounded-3xl border border-aura-beige shadow-xs space-y-6 text-xs text-aura-espresso/80 leading-relaxed font-light">
         <h2 className="font-serif text-lg font-medium text-aura-espresso">1. Demonstration Disclaimer</h2>
         <p>
-          AURA is presented as a high-fidelity e-commerce frontend prototype. All product names (e.g. Santal Ethereal, Velvet Oud Noir), prices, customer profiles, orders, and delivery simulations are fictional and intended for evaluation of design, user experience, and architecture.
+          BELLMORA LUXURY is presented as a high-fidelity e-commerce frontend prototype. All product names (e.g. Santal Ethereal, Velvet Oud Noir), prices, customer profiles, orders, and delivery simulations are fictional and intended for evaluation of design, user experience, and architecture.
         </p>
 
         <h2 className="font-serif text-lg font-medium text-aura-espresso">2. Independent Interpretations</h2>

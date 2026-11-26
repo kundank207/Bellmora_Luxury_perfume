@@ -12,7 +12,7 @@ export const couponService = {
     const matched = coupons.find((c) => c.code === cleanCode);
 
     if (!matched) {
-      throw new Error('Invalid coupon code. Try AURA10 or LUXE15.');
+      throw new Error('Invalid coupon code. Try BELLMORA10 or LUXE15.');
     }
 
     if (subtotal < matched.minOrderAmount) {

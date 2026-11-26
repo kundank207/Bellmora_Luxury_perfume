@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 
 /**
  * BellmoraHeroVideo
- * Cinematic background video for the BELLMORA / AURA homepage hero.
+ * Cinematic background video for the BELLMORA LUXURY homepage hero.
  * Autoplay · muted · loop · playsInline · responsive.
  * Falls back gracefully:
  *   1. Static poster JPG (once rendered)

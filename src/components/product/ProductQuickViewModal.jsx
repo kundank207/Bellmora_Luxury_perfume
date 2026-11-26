@@ -42,7 +42,7 @@ export const ProductQuickViewModal = ({ product, isOpen, onClose }) => {
           />
           <div className="absolute top-8 left-8">
             <span className="px-3 py-1 bg-aura-ivory/90 backdrop-blur-xs text-[10px] uppercase tracking-wider font-semibold text-aura-gold rounded-full border border-aura-gold/30">
-              {product.collectionType === 'original' ? 'AURA Original' : 'Inspired Interpretation'}
+              {product.collectionType === 'original' ? 'BELLMORA Original' : 'Inspired Interpretation'}
             </span>
           </div>
         </div>

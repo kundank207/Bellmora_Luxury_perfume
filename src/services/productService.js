@@ -137,33 +137,56 @@ export const productService = {
     return filtered;
   },
 
-  /**
-   * Fragrance Finder Quiz algorithm
-   */
-  async matchFragranceFinder({ family, occasion, intensity }) {
+  async matchFragranceFinder({ family, occasion, intensity, gender }) {
     await new Promise((resolve) => setTimeout(resolve, 400));
-    let matched = [...products];
+    const matchesFamily = (product) => {
+      if (!family || family === 'any') return false;
+      if (family !== 'Sweet') return product.fragranceFamily?.toLowerCase() === family.toLowerCase();
 
-    if (family && family !== 'any') {
-      matched = matched.filter((p) => p.fragranceFamily.toLowerCase() === family.toLowerCase());
-    }
+      const productDetails = [
+        product.fragranceFamily,
+        product.shortDescription,
+        product.description,
+        ...Object.values(product.notes || {}).flat(),
+      ].join(' ').toLowerCase();
+      return /\b(sweet|vanilla|tonka|cacao|chocolate|caramel|honey|praline|gourmand|sugar)\b/.test(productDetails);
+    };
+    const matchesOccasion = (product) => {
+      if (!occasion || occasion === 'any') return false;
+      const productOccasions = product.occasions || [];
+      if (occasion === 'Daily Wear') return productOccasions.includes('Daily Wear') || productOccasions.includes('Everyday');
+      if (occasion === 'Special Occasion') return productOccasions.some((value) => ['Wedding', 'Party'].includes(value));
+      return productOccasions.includes(occasion);
+    };
+    const matchesIntensity = (product) => {
+      if (!intensity || intensity === 'any') return false;
+      const value = product.intensity?.toLowerCase() || '';
+      if (intensity === 'Light') return value === 'light';
+      if (intensity === 'Moderate') return value.includes('moderate');
+      return value.includes('strong') || value.includes('intense');
+    };
 
-    if (occasion && occasion !== 'any') {
-      const occasionFiltered = matched.filter((p) => p.occasions && p.occasions.includes(occasion));
-      if (occasionFiltered.length > 0) matched = occasionFiltered;
-    }
+    return products
+      .filter((product) => product.brand === 'BELLMORA LUXURY')
+      .filter((product) => !gender || gender === 'any' || gender === 'No Preference' || product.category === gender.toLowerCase())
+      .map((product) => {
+        const reasons = [];
+        if (matchesOccasion(product)) reasons.push(`${occasion === 'Daily Wear' ? 'daily wear' : occasion === 'Special Occasion' ? 'special occasions' : occasion.toLowerCase()} occasion`);
+        if (matchesFamily(product)) reasons.push(`${product.fragranceFamily} scent profile${family === 'Sweet' ? ' with sweet notes' : ''}`);
+        if (matchesIntensity(product)) reasons.push(`${product.intensity} intensity for your ${intensity.toLowerCase()} preference`);
+        if (gender && gender !== 'any' && gender !== 'No Preference') reasons.push(`${gender.toLowerCase()} collection`);
 
-    if (intensity && intensity !== 'any') {
-      const intensityFiltered = matched.filter((p) => p.intensity?.toLowerCase() === intensity.toLowerCase());
-      if (intensityFiltered.length > 0) matched = intensityFiltered;
-    }
-
-    // If too few, fill with bestsellers
-    if (matched.length < 3) {
-      const extras = products.filter((p) => p.isBestseller && !matched.some((m) => m.id === p.id));
-      matched = [...matched, ...extras].slice(0, 4);
-    }
-
-    return matched;
+        return {
+          product,
+          reasons,
+          score: reasons.length,
+        };
+      })
+      .filter((match) => match.score > 0)
+      .sort((a, b) => b.score - a.score
+        || Number(b.product.isBestseller) - Number(a.product.isBestseller)
+        || Number(b.product.isFeatured) - Number(a.product.isFeatured)
+        || a.product.name.localeCompare(b.product.name))
+      .slice(0, 4);
   }
 };

@@ -36,7 +36,7 @@ export const TrackOrderPage = () => {
       handleTrack(paramId);
     } else {
       // Default load first seeded demo order for instant client preview
-      handleTrack('AUR-89241');
+      handleTrack('BLM-89241');
     }
   }, [searchParams]);
 
@@ -105,7 +105,7 @@ export const TrackOrderPage = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. AUR-89241, AUR-92318, or elena.vance@aurafragrance.demo"
+              placeholder="e.g. BLM-89241, BLM-92318, or elena.vance@bellmoraluxury.demo"
               className="w-full pl-10 pr-4 py-3 text-xs bg-aura-ivory border border-aura-beige rounded-xl focus:outline-none focus:border-aura-gold text-aura-espresso font-mono"
             />
           </div>
@@ -122,9 +122,9 @@ export const TrackOrderPage = () => {
         <div className="mt-4 pt-3 border-t border-aura-beige/60 flex flex-wrap items-center gap-2 text-xs">
           <span className="text-[11px] text-aura-grey font-medium">Seed Test Cases:</span>
           {[
-            { id: 'AUR-89241', label: 'AUR-89241 (Delivered)' },
-            { id: 'AUR-92318', label: 'AUR-92318 (Shipped)' },
-            { id: 'AUR-95104', label: 'AUR-95104 (Confirmed)' }
+            { id: 'BLM-89241', label: 'BLM-89241 (Delivered)' },
+            { id: 'BLM-92318', label: 'BLM-92318 (Shipped)' },
+            { id: 'BLM-95104', label: 'BLM-95104 (Confirmed)' }
           ].map((sample) => (
             <button
               key={sample.id}
