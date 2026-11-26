@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BELLMORA — Cinematic Render</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1920px;height:1080px;overflow:hidden;background:#000;}
+  canvas{display:block;width:1920px;height:1080px;}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+/* ─── Canvas & Renderer ─── */
+const canvas = document.getElementById('c');
+const W = 1920, H = 1080;
+canvas.width  = W;
+canvas.height = H;
+
+const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: true,
+  alpha: false,
+  preserveDrawingBuffer: true,
+  powerPreference: 'high-performance'
+});
+renderer.setSize(W, H);
+renderer.setPixelRatio(1);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.4;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+/* ─── Scene ─── */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x040208);
+scene.fog = new THREE.FogExp2(0x040208, 0.018);
+
+/* ─── Camera ─── */
+const camera = new THREE.PerspectiveCamera(45, W/H, 0.1, 100);
+camera.position.set(0, 0.5, 6);
+camera.lookAt(0, 0, 0);
+
+/* ─── CLOCK / TIMING ─── */
+const DURATION = 15; // seconds total
+const FPS = 30;
+const TOTAL_FRAMES = DURATION * FPS;
+let currentFrame = 0;
+window.__totalFrames = TOTAL_FRAMES;
+window.__done = false;
+window.__frameReady = false;
+window.__frameDataURL = null;
+
+/* ══════════════════════════════════════════════
+   GEOMETRY HELPERS
+══════════════════════════════════════════════ */
+
+/* ─── Perfume Bottle ─── */
+function createBottle() {
+  const group = new THREE.Group();
+
+  // ── Body (tall rectangular prism, chamfered feel via lathe) ──
+  const pts = [];
+  for(let i=0;i<40;i++){
+    const t = i/39;
+    const y = -1.2 + t*2.4;
+    let r;
+    if(t < 0.05)       r = 0.0 + t*14; // base taper
+    else if(t < 0.85)  r = 0.55 + 0.04*Math.sin(t*Math.PI); // main body, slight bulge
+    else if(t < 0.92)  r = 0.55 - (t-0.85)*5.5; // shoulder
+    else               r = 0.14; // neck
+    pts.push(new THREE.Vector2(r, y));
+  }
+  const bodyGeo = new THREE.LatheGeometry(pts, 48);
+  
+  // Glass material — frosted crystal look
+  const glassMat = new THREE.MeshPhysicalMaterial({
+    color: 0xd4c8b8,
+    metalness: 0.0,
+    roughness: 0.04,
+    transmission: 0.92,
+    thickness: 1.2,
+    ior: 1.52,
+    reflectivity: 0.95,
+    transparent: true,
+    opacity: 0.92,
+    side: THREE.DoubleSide,
+    envMapIntensity: 2.5,
+  });
+
+  const body = new THREE.Mesh(bodyGeo, glassMat);
+  body.castShadow = true;
+  group.add(body);
+
+  // ── Inner liquid fill ──
+  const liquidPts = [];
+  for(let i=0;i<30;i++){
+    const t=i/29;
+    const y=-1.1+t*1.6;
+    let r;
+    if(t<0.9) r=0.44+0.03*Math.sin(t*Math.PI);
+    else r=0.44-(t-0.9)*3.5;
+    liquidPts.push(new THREE.Vector2(r,y));
+  }
+  const liquidGeo = new THREE.LatheGeometry(liquidPts,40);
+  const liquidMat = new THREE.MeshPhysicalMaterial({
+    color: 0xc8972a,
+    metalness: 0.1,
+    roughness: 0.08,
+    transmission: 0.65,
+    thickness: 0.8,
+    transparent: true,
+    opacity: 0.7,
+    side: THREE.DoubleSide,
+  });
+  const liquid = new THREE.Mesh(liquidGeo, liquidMat);
+  liquid.position.y = -0.1;
+  group.add(liquid);
+
+  // ── Cap ──
+  const capGeo = new THREE.CylinderGeometry(0.22, 0.17, 0.52, 32);
+  const capMat = new THREE.MeshStandardMaterial({
+    color: 0xc6a04a,
+    metalness: 0.95,
+    roughness: 0.08,
+    envMapIntensity: 3.0,
+  });
+  const cap = new THREE.Mesh(capGeo, capMat);
+  cap.position.y = 1.46;
+  group.add(cap);
+
+  // cap top disc
+  const capTopGeo = new THREE.CylinderGeometry(0.22,0.22,0.06,32);
+  const capTop = new THREE.Mesh(capTopGeo, capMat);
+  capTop.position.y = 1.72;
+  group.add(capTop);
+
+  // ── Base plate ──
+  const basePts=[];
+  for(let i=0;i<20;i++){const t=i/19;basePts.push(new THREE.Vector2(0.56-t*0.08,-1.2-t*0.12));}
+  const baseGeo=new THREE.LatheGeometry(basePts,48);
+  const baseMat=new THREE.MeshStandardMaterial({color:0x1a1210,metalness:0.6,roughness:0.3});
+  const base=new THREE.Mesh(baseGeo,baseMat);
+  group.add(base);
+
+  // ── Gold band ring ──
+  const ringGeo = new THREE.TorusGeometry(0.555, 0.025, 12, 48);
+  const ringMat = new THREE.MeshStandardMaterial({color:0xd4a832,metalness:1.0,roughness:0.05});
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = Math.PI/2;
+  ring.position.y = -0.95;
+  group.add(ring);
+  const ring2 = ring.clone();
+  ring2.position.y = 0.9;
+  group.add(ring2);
+
+  return group;
+}
+
+/* ─── Floating Particle System ─── */
+function createParticles(count, spread, color, size) {
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count*3);
+  const vel = new Float32Array(count*3);
+  for(let i=0;i<count;i++){
+    pos[i*3+0] = (Math.random()-0.5)*spread;
+    pos[i*3+1] = (Math.random()-0.5)*spread*0.6;
+    pos[i*3+2] = (Math.random()-0.5)*spread*0.4;
+    vel[i*3+0] = (Math.random()-0.5)*0.002;
+    vel[i*3+1] = Math.random()*0.004 + 0.001;
+    vel[i*3+2] = (Math.random()-0.5)*0.001;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+  geo._vel = vel;
+  const mat = new THREE.PointsMaterial({
+    color, size, transparent:true, opacity:0.7,
+    blending: THREE.AdditiveBlending, depthWrite:false,
+    sizeAttenuation:true
+  });
+  return new THREE.Points(geo, mat);
+}
+
+/* ─── Light Rays (volumetric planes) ─── */
+function createLightRays() {
+  const group = new THREE.Group();
+  for(let i=0;i<6;i++){
+    const geo = new THREE.PlaneGeometry(0.12+Math.random()*0.1, 6+Math.random()*2);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0xffd070,
+      transparent:true,
+      opacity:0.03+Math.random()*0.04,
+      side:THREE.DoubleSide,
+      blending:THREE.AdditiveBlending,
+      depthWrite:false
+    });
+    const ray = new THREE.Mesh(geo, mat);
+    ray.rotation.z = (Math.random()-0.5)*0.4;
+    ray.rotation.y = (Math.random()-0.5)*0.3;
+    ray.position.set((Math.random()-0.5)*3, 1+Math.random(), -1+Math.random()*2);
+    group.add(ray);
+  }
+  return group;
+}
+
+/* ─── Gold liquid droplets ─── */
+function createDroplets(count) {
+  const group = new THREE.Group();
+  for(let i=0;i<count;i++){
+    const r = 0.04 + Math.random()*0.08;
+    const geo = new THREE.SphereGeometry(r, 16, 16);
+    const mat = new THREE.MeshPhysicalMaterial({
+      color: 0xd4a020,
+      metalness:0.2,
+      roughness:0.05,
+      transmission:0.6,
+      thickness:0.3,
+      transparent:true,
+      opacity:0.85,
+      envMapIntensity:2.0
+    });
+    const d = new THREE.Mesh(geo, mat);
+    d.userData = {
+      ox: (Math.random()-0.5)*5,
+      oy: (Math.random()-0.5)*2.5,
+      oz: (Math.random()-0.5)*1.5,
+      speed: 0.4+Math.random()*0.6,
+      phase: Math.random()*Math.PI*2
+    };
+    d.position.set(d.userData.ox, d.userData.oy, d.userData.oz);
+    group.add(d);
+  }
+  return group;
+}
+
+/* ─── Environment Map (procedural gradient) ─── */
+function createEnvMap() {
+  const size=128;
+  const data=new Uint8Array(size*size*4);
+  for(let y=0;y<size;y++) for(let x=0;x<size;x++){
+    const i=(y*size+x)*4;
+    const t=y/size;
+    data[i+0]=Math.floor(80*t+10);
+    data[i+1]=Math.floor(50*t+5);
+    data[i+2]=Math.floor(20*t+5);
+    data[i+3]=255;
+  }
+  const tex=new THREE.DataTexture(data,size,size);
+  tex.needsUpdate=true;
+  const pmrem=new THREE.PMREMGenerator(renderer);
+  const rt=pmrem.fromEquirectangular(tex);
+  pmrem.dispose();
+  tex.dispose();
+  return rt.texture;
+}
+
+/* ─── Reflective Floor ─── */
+function createFloor() {
+  const geo = new THREE.PlaneGeometry(20,20);
+  const mat = new THREE.MeshStandardMaterial({
+    color:0x0d0a08,
+    metalness:0.9,
+    roughness:0.05,
+    envMapIntensity:1.5,
+  });
+  const mesh = new THREE.Mesh(geo,mat);
+  mesh.rotation.x=-Math.PI/2;
+  mesh.position.y=-1.35;
+  mesh.receiveShadow=true;
+  return mesh;
+}
+
+/* ════════════════════════════════
+   BUILD SCENE
+════════════════════════════════ */
+const envMap = createEnvMap();
+scene.environment = envMap;
+
+const bottle = createBottle();
+bottle.position.set(0, 0, 0);
+bottle.scale.setScalar(1.0);
+scene.add(bottle);
+
+const particles1 = createParticles(400, 12, 0xffc040, 0.025);
+const particles2 = createParticles(200, 8,  0xffeecc, 0.015);
+const particles3 = createParticles(150, 10, 0x80aaff, 0.018);
+scene.add(particles1);
+scene.add(particles2);
+scene.add(particles3);
+
+const lightRays = createLightRays();
+scene.add(lightRays);
+
+const droplets = createDroplets(18);
+scene.add(droplets);
+
+const floor = createFloor();
+scene.add(floor);
+
+/* ─── Lighting Setup ─── */
+// Ambient
+const ambientLight = new THREE.AmbientLight(0x1a1008, 0.8);
+scene.add(ambientLight);
+
+// Key light — gold warm
+const keyLight = new THREE.SpotLight(0xffd060, 8, 20, Math.PI/5, 0.3, 1.5);
+keyLight.position.set(3, 5, 4);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(1024,1024);
+scene.add(keyLight);
+scene.add(keyLight.target);
+
+// Fill — cool blue rim
+const fillLight = new THREE.PointLight(0x4060ff, 2, 12);
+fillLight.position.set(-3, 1, 2);
+scene.add(fillLight);
+
+// Back rim — pink/rose
+const rimLight = new THREE.PointLight(0xff80b0, 3, 10);
+rimLight.position.set(-2, 2, -4);
+scene.add(rimLight);
+
+// Ground bounce
+const groundLight = new THREE.PointLight(0xc08020, 1.5, 8);
+groundLight.position.set(0, -2, 2);
+scene.add(groundLight);
+
+// Extra frontal soft 
+const frontLight = new THREE.DirectionalLight(0xfff8e8, 0.6);
+frontLight.position.set(0, 2, 6);
+scene.add(frontLight);
+
+/* ─── Background gradient plane ─── */
+const bgGeo = new THREE.PlaneGeometry(32,18);
+const bgMat = new THREE.ShaderMaterial({
+  uniforms:{
+    uColor1:{value:new THREE.Color(0x040208)},
+    uColor2:{value:new THREE.Color(0x0d0810)},
+    uColor3:{value:new THREE.Color(0x040208)},
+    uBlend:{value:0.0},
+  },
+  vertexShader:`
+    varying vec2 vUv;
+    void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}
+  `,
+  fragmentShader:`
+    varying vec2 vUv;
+    uniform vec3 uColor1,uColor2,uColor3;
+    uniform float uBlend;
+    void main(){
+      vec3 c=mix(uColor1,uColor2,smoothstep(0.3,0.7,vUv.y));
+      c=mix(c,uColor3,uBlend*smoothstep(0.4,0.6,vUv.x));
+      gl_FragColor=vec4(c,1.0);
+    }
+  `,
+  depthWrite:false,
+  side:THREE.DoubleSide
+});
+const bgPlane = new THREE.Mesh(bgGeo, bgMat);
+bgPlane.position.z = -8;
+bgPlane.renderOrder = -1;
+scene.add(bgPlane);
+
+/* ─── Vignette overlay (second full-screen plane) ─── */
+// Will be handled via scene overlay camera
+const vignetteScene = new THREE.Scene();
+const vigCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const vigGeo = new THREE.PlaneGeometry(2,2);
+const vigMat = new THREE.ShaderMaterial({
+  uniforms:{uStrength:{value:0.6}},
+  vertexShader:`void main(){gl_Position=vec4(position,1.0);}`,
+  fragmentShader:`
+    uniform float uStrength;
+    void main(){
+      vec2 uv=(gl_FragCoord.xy/vec2(1920.0,1080.0));
+      vec2 d=uv-0.5;
+      float v=dot(d,d)*uStrength*2.5;
+      gl_FragColor=vec4(0.0,0.0,0.0,v);
+    }
+  `,
+  transparent:true,
+  depthTest:false,
+  blending:THREE.NormalBlending
+});
+vignetteScene.add(new THREE.Mesh(vigGeo,vigMat));
+
+/* ════════════════════════════════
+   ANIMATION / SCENE TIMELINE
+════════════════════════════════ */
+
+function easeInOut(t){return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
+function lerp(a,b,t){return a+(b-a)*t;}
+function clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function invlerp(a,b,v){return clamp((v-a)/(b-a),0,1);}
+
+function animateFrame(frame) {
+  const t = frame / TOTAL_FRAMES;          // 0..1 global
+  const sec = frame / FPS;                  // seconds
+
+  /* ── Particle drift ── */
+  [particles1, particles2, particles3].forEach((pts, pi)=>{
+    const pos = pts.geometry.attributes.position.array;
+    const vel = pts.geometry._vel;
+    const count = pos.length/3;
+    for(let i=0;i<count;i++){
+      pos[i*3+0]+=vel[i*3+0];
+      pos[i*3+1]+=vel[i*3+1];
+      pos[i*3+2]+=vel[i*3+2];
+      if(pos[i*3+1]>6)pos[i*3+1]=-6;
+      if(Math.abs(pos[i*3+0])>7)vel[i*3+0]*=-1;
+    }
+    pts.geometry.attributes.position.needsUpdate=true;
+  });
+
+  /* ── Droplet float ── */
+  droplets.children.forEach(d=>{
+    const u=d.userData;
+    d.position.y = u.oy + Math.sin(sec*u.speed+u.phase)*0.3;
+    d.position.x = u.ox + Math.cos(sec*u.speed*0.5+u.phase)*0.15;
+    d.rotation.y += 0.01;
+  });
+
+  /* ── Light rays flicker ── */
+  lightRays.children.forEach((r,i)=>{
+    r.material.opacity = (0.03+0.04*Math.random())*(0.6+0.4*Math.sin(sec*0.8+i));
+  });
+
+  /* ─────────────────────────────
+     SCENE 1  (0–4s): 
+     Dark studio, droplets, particles, light rays
+     Camera slowly drifts from left-high angle
+  ───────────────────────────────*/
+  if(sec < 4) {
+    const p = sec/4; // 0→1
+    
+    camera.position.x = lerp(-2.5, -0.5, easeInOut(p));
+    camera.position.y = lerp(1.5, 0.8, easeInOut(p));
+    camera.position.z = lerp(7, 6, easeInOut(p));
+    camera.lookAt(0, 0, 0);
+
+    // Dark warm environment, mostly particle show
+    ambientLight.intensity = lerp(0.5, 0.9, p);
+    keyLight.intensity = lerp(3, 7, easeInOut(p));
+    keyLight.color.setHex(0xffd060);
+    fillLight.color.setHex(0x4060ff);
+    fillLight.intensity = lerp(1, 2.5, p);
+    rimLight.intensity = lerp(1, 2.5, p);
+    rimLight.color.setHex(0xff80b0);
+
+    // Bottle just barely visible — mostly dark
+    bottle.scale.setScalar(lerp(0.6, 1.0, easeInOut(p)));
+    bottle.rotation.y = sec*0.15;
+    bottle.position.y = lerp(-0.4, 0, easeInOut(p));
+
+    // Show all droplets in scene 1
+    droplets.visible = true;
+    droplets.children.forEach((d,i)=>{
+      d.material.opacity = lerp(0, 0.85, Math.min(1, p*3));
+    });
+
+    bgMat.uniforms.uColor1.value.setHex(0x040208);
+    bgMat.uniforms.uColor2.value.setHex(0x0d0810);
+    bgMat.uniforms.uBlend.value = 0;
+
+    lightRays.visible = true;
+    particles1.material.opacity = lerp(0.3, 0.7, p);
+    particles2.material.opacity = lerp(0.2, 0.5, p);
+    particles3.material.opacity = 0;
+    vigMat.uniforms.uStrength.value = lerp(1.2, 0.7, p);
+  }
+
+  /* ─────────────────────────────
+     SCENE 2  (4–8s):
+     Bottle reveal, cinematic camera orbit, golden light
+  ───────────────────────────────*/
+  else if(sec < 8) {
+    const p = (sec-4)/4;
+
+    // Smooth orbit around bottle
+    const angle = lerp(Math.PI*0.1, -Math.PI*0.15, easeInOut(p));
+    camera.position.x = Math.sin(angle)*5.5;
+    camera.position.y = lerp(0.8, 0.2, easeInOut(p));
+    camera.position.z = Math.cos(angle)*5.5;
+    camera.lookAt(0, 0.3, 0);
+
+    bottle.rotation.y = lerp(bottle.rotation.y, sec*0.2, 0.05);
+
+    // Brilliant gold key
+    keyLight.intensity = lerp(7, 12, easeInOut(p));
+    keyLight.color.setHex(0xffd090);
+    fillLight.intensity = lerp(2.5, 3.5, p);
+    rimLight.intensity = lerp(2.5, 4, p);
+    ambientLight.intensity = lerp(0.9, 1.4, p);
+
+    // Gradually fade droplets away
+    const dropFade = 1-p;
+    droplets.children.forEach(d=>d.material.opacity = 0.85*dropFade);
+    if(p>0.9)droplets.visible=false;
+
+    bgMat.uniforms.uColor2.value.setHex(0x1a0e06);
+    bgMat.uniforms.uBlend.value = 0;
+
+    lightRays.visible = p<0.5;
+    particles1.material.opacity = lerp(0.7, 0.4, p);
+    particles2.material.opacity = lerp(0.5, 0.3, p);
+    vigMat.uniforms.uStrength.value = lerp(0.7, 0.5, p);
+  }
+
+  /* ─────────────────────────────
+     SCENE 3  (8–12s):
+     Color lighting transition: pink → gold → midnight blue
+  ───────────────────────────────*/
+  else if(sec < 12) {
+    const p = (sec-8)/4; // 0→1
+
+    // Slow pull-back and center
+    camera.position.x = lerp(camera.position.x, 0, 0.04);
+    camera.position.y = lerp(camera.position.y, 0.5, 0.04);
+    camera.position.z = lerp(camera.position.z, 5.5, 0.04);
+    camera.lookAt(0, 0.2, 0);
+
+    bottle.rotation.y = sec*0.18;
+
+    // Phase A (p 0→0.33): pink/rose for women
+    if(p < 0.33){
+      const pp = p/0.33;
+      keyLight.color.setHex(0xff9ab8);
+      keyLight.intensity = lerp(10, 8, pp);
+      fillLight.color.setHex(0xff80b0);
+      fillLight.intensity = lerp(3, 2, pp);
+      rimLight.color.setHex(0xffc0d8);
+      rimLight.intensity = lerp(5, 3, pp);
+      bgMat.uniforms.uColor1.value.setHex(0x1a0510);
+      bgMat.uniforms.uColor2.value.setHex(0x2a0818);
+      scene.fog.color.setHex(0x1a0510);
+    }
+    // Phase B (p 0.33→0.66): champagne gold for unisex
+    else if(p < 0.66){
+      const pp=(p-0.33)/0.33;
+      keyLight.color.setHex(0xffd070);
+      keyLight.intensity = lerp(8, 10, pp);
+      fillLight.color.setHex(0xffc030);
+      fillLight.intensity = lerp(2, 3, pp);
+      rimLight.color.setHex(0xffe090);
+      rimLight.intensity = lerp(3, 4, pp);
+      bgMat.uniforms.uColor1.value.setHex(0x14100a);
+      bgMat.uniforms.uColor2.value.setHex(0x221a0a);
+      scene.fog.color.setHex(0x14100a);
+    }
+    // Phase C (p 0.66→1): midnight blue for men
+    else {
+      const pp=(p-0.66)/0.34;
+      keyLight.color.setHex(0x6090ff);
+      keyLight.intensity = lerp(10, 9, pp);
+      fillLight.color.setHex(0x3060d0);
+      fillLight.intensity = lerp(3, 3.5, pp);
+      rimLight.color.setHex(0x8090ff);
+      rimLight.intensity = lerp(4, 5, pp);
+      bgMat.uniforms.uColor1.value.setHex(0x030810);
+      bgMat.uniforms.uColor2.value.setHex(0x060e1c);
+      scene.fog.color.setHex(0x030810);
+    }
+
+    bgMat.uniforms.uBlend.value = Math.sin(p*Math.PI)*0.3;
+    ambientLight.intensity = 1.2;
+    droplets.visible = false;
+    lightRays.visible = false;
+    particles1.material.opacity = 0.3;
+    particles2.material.opacity = 0.2;
+    particles3.material.opacity = lerp(0, 0.4, p);
+    vigMat.uniforms.uStrength.value = 0.55;
+  }
+
+  /* ─────────────────────────────
+     SCENE 4  (12–15s):
+     Hero final shot — centered bottle, gold, dark luxury
+  ───────────────────────────────*/
+  else {
+    const p = (sec-12)/3; // 0→1
+
+    // Slow push-in final
+    camera.position.x = lerp(camera.position.x, 0, 0.03);
+    camera.position.y = lerp(camera.position.y, 0.15, 0.03);
+    camera.position.z = lerp(camera.position.z, 4.8, 0.02);
+    camera.lookAt(0, 0.1, 0);
+
+    bottle.rotation.y = sec*0.12;
+
+    // Return to rich gold
+    keyLight.color.setHex(0xffd868);
+    keyLight.intensity = lerp(9, 11, easeInOut(p));
+    fillLight.color.setHex(0x5070ff);
+    fillLight.intensity = lerp(3, 2.5, p);
+    rimLight.color.setHex(0xffb040);
+    rimLight.intensity = lerp(5, 6, easeInOut(p));
+    ambientLight.intensity = lerp(1.2, 1.5, easeInOut(p));
+    groundLight.intensity = lerp(1.5, 2.5, p);
+
+    bgMat.uniforms.uColor1.value.setHex(0x060408);
+    bgMat.uniforms.uColor2.value.setHex(0x100c08);
+    bgMat.uniforms.uBlend.value = 0;
+    scene.fog.color.setHex(0x060408);
+
+    droplets.visible = false;
+    lightRays.visible = false;
+    particles1.material.opacity = lerp(0.3, 0.6, p);
+    particles2.material.opacity = lerp(0.2, 0.4, p);
+    particles3.material.opacity = lerp(0.4, 0.2, p);
+    vigMat.uniforms.uStrength.value = lerp(0.55, 0.45, p);
+  }
+
+  /* ─── Render ─── */
+  renderer.autoClear = true;
+  renderer.render(scene, camera);
+  renderer.autoClear = false;
+  renderer.render(vignetteScene, vigCam);
+  renderer.autoClear = true;
+}
+
+/* ════════════════════════════════
+   FRAME PUMP — called by puppeteer
+════════════════════════════════ */
+window.__renderFrame = function(frame) {
+  currentFrame = frame;
+  animateFrame(frame);
+  window.__frameDataURL = canvas.toDataURL('image/jpeg', 0.92);
+  window.__frameReady = true;
+};
+
+// Render frame 0 immediately so puppeteer can detect readiness
+animateFrame(0);
+window.__ready = true;
+console.log('BELLMORA scene ready. Total frames:', TOTAL_FRAMES);
+</script>
+</body>
+</html>
